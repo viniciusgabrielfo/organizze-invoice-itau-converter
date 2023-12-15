@@ -10,6 +10,6 @@ RUN apt-get install -y python3-pip && apt-get install -y libreoffice
 
 RUN pip install unoserver
 
-COPY ./fatura.xlsx fatura.xlsx
+COPY ./organizze-entries.xlsx organizze-entries.xlsx
 
 CMD ["unoserver"]

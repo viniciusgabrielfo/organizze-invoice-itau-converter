@@ -34,7 +34,7 @@ func GenerateOrganizzeXLXSSheet(entries []model.Entry) error {
 
 	}
 
-	if err := f.SaveAs("fatura.xlsx"); err != nil {
+	if err := f.SaveAs("organizze-entries.xlsx"); err != nil {
 		return err
 	}
 

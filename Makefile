@@ -11,10 +11,12 @@ down-unoconv:
 	docker container stop unoconv
 	docker container rm unoconv
 
+run-unoconv:
+	docker exec unoconv unoconvert organizze-entries.xlsx organizze-entries-to-import.xls --convert-to xls
+	docker cp unoconv:/organizze-entries-to-import.xls .
+
 run: run-invoice-itau-consumer up-unoconv
-	sleep 5
-	docker exec unoconv unoconvert fatura.xlsx fatura.xls --convert-to xls
-	docker cp unoconv:/fatura.xls .
+	sleep 3
+	docker exec unoconv unoconvert organizze-entries.xlsx organizze-entries-to-import.xls --convert-to xls
+	docker cp unoconv:/organizze-entries-to-import.xls .
 	$(MAKE) down-unoconv
-
-
