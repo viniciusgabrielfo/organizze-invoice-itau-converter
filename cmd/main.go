@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log/slog"
 
 	"github.com/viniciusgabrielfo/organizze-invoice-itau-converter/internal"
@@ -15,7 +16,6 @@ func init() {
 }
 
 func main() {
-
 	l := slog.Default()
 
 	l.Info("Starting invoice-itau-consumer...")
@@ -26,13 +26,14 @@ func main() {
 		return
 	}
 
-	l.Info("Invoice Itaú successfully consumed!")
-	l.Info("Starting to generate fatura.xlsx...")
+	l.Info(fmt.Sprintf("Itaú's invoice successfully consumed from %s!", invoicePath))
+	l.Info(fmt.Sprintf("Starting to generate %s...", internal.OrganizzeSheetName))
 
 	if err := internal.GenerateOrganizzeXLXSSheet(entries); err != nil {
 		l.Error(err.Error())
 		return
 	}
 
-	l.Info("Finished, fatura.xlsx was generated! Please run 'make run unoconv' to convert fatura.xlsx to fatura.xls")
+	l.Info(fmt.Sprintf("Finished, %s was generated!", internal.OrganizzeSheetName))
+	l.Info(fmt.Sprintf("Please run 'make run unoconv' to convert %s to organizze-entries-to-import.xls", internal.OrganizzeSheetName))
 }

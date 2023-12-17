@@ -1,0 +1,33 @@
+run:
+  deadline: 3m
+  tests: false
+
+linters-settings:
+  revive:
+    rules:
+      - name: unexported-return
+        severity: warning
+        disabled: true
+  goconst:
+    min-occurrences: 3
+  misspell:
+    locale: US
+
+linters:
+  disable-all: true
+  enable:
+    - errcheck # Checking for unchecked errors
+    - govet # Vet examines Go source code and reports suspicious constructs (native pkg)
+    - staticcheck # It's a set of rules from staticcheck (https://staticcheck.io/)
+    - typecheck # Parses and type checks
+    - unused # Check unused constants, variables, functions and types
+    - bodyclose # Checks whether HTTP response body is closed successfully
+    - gocognit # Computes and checks the cognitive complexity of functions
+    - goconst # Finds repeated strings that could be replaced by a constant
+    - gocritic # Provides diagnostics that check for bugs, performance and style issues.
+    - gocyclo # Computes and checks the cyclomatic complexity of functions
+    - ireturn # Accept Interfaces, Return Concrete Types
+    - loggercheck # Checks key values pairs for common logger libraries (kitlog,klog,logr,zap).
+    - misspell # Finds commonly misspelled English words in comments
+    - revive # Fast, configurable, extensible, flexible, and beautiful linter for Go.
+    - wsl # WSL is a linter that enforces a very non scientific vision of how to make code more readable by enforcing empty lines at the right places.

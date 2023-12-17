@@ -1,5 +1,14 @@
 invoice_path ?= $(HOME)/Downloads/Fatura-Excel.xls
 
+build:
+	go build -v ./...
+
+test:
+	go test -race ./...
+
+lint:
+	golangci-lint run --fix
+
 run-invoice-itau-consumer:
 	go run cmd/main.go --file $(invoice_path)
 

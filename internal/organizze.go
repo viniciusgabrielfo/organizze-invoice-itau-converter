@@ -7,6 +7,8 @@ import (
 	"github.com/xuri/excelize/v2"
 )
 
+const OrganizzeSheetName = "organizze-entries.xlsx"
+
 func GenerateOrganizzeXLXSSheet(entries []model.Entry) error {
 	f := excelize.NewFile()
 
@@ -31,10 +33,9 @@ func GenerateOrganizzeXLXSSheet(entries []model.Entry) error {
 		f.SetCellValue("Sheet1", fmt.Sprintf("B%d", row), entries[i].Description)
 		f.SetCellValue("Sheet1", fmt.Sprintf("C%d", row), entries[i].Category)
 		f.SetCellFloat("Sheet1", fmt.Sprintf("D%d", row), entries[i].Value.AsMajorUnits(), 2, 32)
-
 	}
 
-	if err := f.SaveAs("organizze-entries.xlsx"); err != nil {
+	if err := f.SaveAs(OrganizzeSheetName); err != nil {
 		return err
 	}
 
