@@ -2,7 +2,11 @@ package internal
 
 import (
 	"errors"
+	"log/slog"
+	"regexp"
 	"strconv"
+	"strings"
+	"time"
 
 	"github.com/Rhymond/go-money"
 	"github.com/viniciusgabrielfo/organizze-invoice-itau-converter/pkg/category_definer"
@@ -10,7 +14,14 @@ import (
 	"github.com/viniciusgabrielfo/xls"
 )
 
-func GetEntriesFromItauInvoice(filePath string) ([]model.Entry, error) {
+type ItauImportConfigs struct {
+	StartDate time.Time
+	EndDate   time.Time
+}
+
+func GetEntriesFromItauInvoice(configs *ItauImportConfigs, filePath string) ([]model.Entry, error) {
+	logger := slog.Default()
+
 	f, err := xls.Open(filePath, "utf-8")
 	if err != nil {
 		return nil, err
@@ -35,34 +46,87 @@ func GetEntriesFromItauInvoice(filePath string) ([]model.Entry, error) {
 			continue
 		}
 
-		col1 := row.Col(0)
-		col2 := row.Col(1)
+		date := row.Col(0)
+		description := row.Col(1)
 
-		if col1 == "data" && col2 == "lançamento" {
+		if date == "data" && description == "lançamento" {
 			isEntry = true
 			continue
 		}
 
 		if isEntry {
-			if col1 == "" || col2 == "dólar de conversão" {
+			if date == "" || description == "dólar de conversão" {
 				continue
 			}
 
-			col4 := row.Col(3)
+			entryDate, err := time.Parse("02/01/2006", date)
+			if err != nil {
+				logger.Error(err.Error())
+				continue
+			}
 
-			value, err := strconv.ParseFloat(col4, 32)
+			if !IsBetweenConfigInternal(configs, entryDate) {
+				continue
+			}
+
+			value, err := strconv.ParseFloat(row.Col(3), 32)
 			if err != nil {
 				return entries, err
 			}
 
+			if ok, installments := IsInstallmentPurchase(description); ok {
+				value = value * float64(installments)
+			}
+
 			entries = append(entries, model.Entry{
-				Date:        col1,
-				Description: col2,
-				Category:    category_definer.GetCategoryFromDescription(col2),
+				Date:        date,
+				Description: description,
+				Category:    category_definer.GetCategoryFromDescription(description),
 				Value:       money.NewFromFloat(-value, money.BRL),
 			})
 		}
 	}
 
 	return entries, nil
+}
+
+func IsBetweenConfigInternal(configs *ItauImportConfigs, date time.Time) bool {
+	if !configs.StartDate.IsZero() {
+		if date.Before(configs.StartDate) {
+			return false
+		}
+	}
+
+	if !configs.EndDate.IsZero() {
+		if date.After(configs.EndDate) {
+			return false
+		}
+	}
+
+	return true
+}
+
+func IsInstallmentPurchase(description string) (bool, int32) {
+	logger := slog.Default()
+
+	re, err := regexp.Compile("[0-9]+/[0-9]+")
+	if err != nil {
+		logger.Error(err.Error())
+		return false, 0
+	}
+
+	installmentPattern := re.FindAllString(description, -1)
+	if len(installmentPattern) == 0 {
+		return false, 0
+	}
+
+	s := strings.Split(installmentPattern[0], "/")
+
+	i, err := strconv.ParseInt(s[1], 10, 32)
+	if err != nil {
+		logger.Error(err.Error())
+		return false, 0
+	}
+
+	return true, int32(i)
 }

@@ -4,14 +4,21 @@ import (
 	"flag"
 	"fmt"
 	"log/slog"
+	"time"
 
 	"github.com/viniciusgabrielfo/organizze-invoice-itau-converter/internal"
 )
 
-var invoicePath string
+var (
+	invoicePath string
+	startDate   string
+	endDate     string
+)
 
 func init() {
 	flag.StringVar(&invoicePath, "file", "", "itaú invoice path to consume")
+	flag.StringVar(&startDate, "start-date", "", "only consume from start-date (02/01/2006)")
+	flag.StringVar(&endDate, "end-date", "", "only consume until end-date (02/01/2006)")
 	flag.Parse()
 }
 
@@ -20,7 +27,27 @@ func main() {
 
 	l.Info("Starting invoice-itau-consumer...")
 
-	entries, err := internal.GetEntriesFromItauInvoice(invoicePath)
+	itauImportConfigs := &internal.ItauImportConfigs{}
+
+	if startDate != "" {
+		tStartDate, err := time.Parse("02/01/2006", startDate)
+		if err != nil {
+			panic(err)
+		}
+
+		itauImportConfigs.StartDate = tStartDate
+	}
+
+	if endDate != "" {
+		tEndDate, err := time.Parse("02/01/2006", endDate)
+		if err != nil {
+			panic(err)
+		}
+
+		itauImportConfigs.EndDate = tEndDate
+	}
+
+	entries, err := internal.GetEntriesFromItauInvoice(itauImportConfigs, invoicePath)
 	if err != nil {
 		l.Error(err.Error())
 		return
