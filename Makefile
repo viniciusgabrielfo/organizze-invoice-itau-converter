@@ -7,7 +7,7 @@ test:
 	go test -race ./...
 
 lint:
-	golangci-lint run --fix
+	golangci-lint run -v --fix ./...
 
 run-invoice-itau-consumer:
 	go run cmd/main.go --file $(invoice_path)
